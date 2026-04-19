@@ -17,7 +17,7 @@ public class CommandExecutor {
         addAllCommands();
     }
     private void addAllCommands(){
-        commands.put('help',new HelpCommand());
+        commands.put('help',new HelpCommand(this));
         commands.put('info',new InfoCommand());
         commands.put('show',new ShowCommand());
         commands.put('add',new AddCommand());
@@ -31,6 +31,10 @@ public class CommandExecutor {
         commands.put('remove_any_by_type',new RemoveAnyByTypeCommand());
         commands.put('min_by_venue',new MinByVenueCommand());
         commands.put('save',new SaveCommand());
+    }
+
+    public Map<String, Command> getCommands(){
+        return commands;
     }
     public Response execute(Request request){
         String commandName = request.getCommandName();
