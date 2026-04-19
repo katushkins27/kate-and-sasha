@@ -1,5 +1,6 @@
 package client;
 import common.data.Ticket;
+import common.data.TicketType;
 import common.network.*;
 import java.io.*;
 import java.net.*;
@@ -27,20 +28,20 @@ public class Client {
             channel = DatagramChannel.open();
             channel.configureBlocking(false);
             serverAddress = new InetSocketAddress(host, port);
-             System.out.println("Клиент запущен. Подключение к "+host+":"+port);
-             System.out.println("Введите 'help' для списка команд, 'exit' для выхода");
-             boolean running = true;
-             while (running){
-                 System.out.print("> ");
-                 String inputLine = scanner.nextLine().trim();
-                 if (inputLine.isEmpty()) continue;
-                 if (inputLine.equalsIgnoreCase("exit")){
-                     running = false;
-                     System.out.println("Сеанс завершен");
-                     break;
-                 }
-                 processCommand(inputLine);
-             }
+            System.out.println("Клиент запущен. Подключение к "+host+":"+port);
+            System.out.println("Введите 'help' для списка команд, 'exit' для выхода");
+            boolean running = true;
+            while (running){
+                System.out.print("> ");
+                String inputLine = scanner.nextLine().trim();
+                if (inputLine.isEmpty()) continue;
+                if (inputLine.equalsIgnoreCase("exit")){
+                    running = false;
+                    System.out.println("Сеанс завершен");
+                    break;
+                }
+                processCommand(inputLine);
+            }
         } catch (IOException e){
             System.err.println("Ошибка клиента: "+e.getMessage());
         } finally {
@@ -101,7 +102,7 @@ public class Client {
             case "remove_any_by_type":
                 String typeInput;
                 if (arg.isEmpty()) {
-                    System.out.println("Введите тип билета: VIP, USUAL, BUDGETARY, CHEAP");
+                    System.out.println(TicketType.AllDescriptions());
                     typeInput = scanner.nextLine().trim().toUpperCase();
                 } else {
                     typeInput = arg.toUpperCase();
