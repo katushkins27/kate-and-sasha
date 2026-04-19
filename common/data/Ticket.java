@@ -37,6 +37,10 @@ public class Ticket implements Comparable<Ticket>, Serializable {
     }
 
     public void setID(int id) {
+        this.id = id;
+    }
+
+    public void setIdWithValid(int id) {
         if (id <= 0) {
             throw new IllegalArgumentException("ID должен быть строго больше 0");
         }

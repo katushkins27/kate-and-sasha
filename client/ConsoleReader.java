@@ -171,32 +171,30 @@ public class ConsoleReader {
 
         Location town = null;
         if (readYN("Добавить координаты и город? (y/n)")) {
-                town = readLocation();
-            }
+            town = readLocation();
         }
+
         return new Address(street, zipCode, town);
     }
 
     public static Venue readVenue() {
         if (!readYN("Добавить местоположение? (y/n)")) {
-                return null;
-            }
-            System.out.println("Введите данные места проведения:");
-            long id = client.util.CreateID.createVenueID();
-            String name = readNotEmptyStr("Введите название: ");
-            int capacity = readInt("Введите вместимость: ");
-            while (capacity <= 0) {
-                System.out.println("Вместимрсть должна быть больше 0");
-                capacity = readInt("Введите вместимость: ");
-            }
-            Address address = readAddress();
-            return new Venue(id, name, capacity, address);
+            return null;
         }
+        System.out.println("Введите данные места проведения:");
+        long id = 0;
+        String name = readNotEmptyStr("Введите название: ");
+        int capacity = readInt("Введите вместимость: ");
+        while (capacity <= 0) {
+            System.out.println("Вместимрсть должна быть больше 0");
+            capacity = readInt("Введите вместимость: ");
+        }
+        Address address = readAddress();
+        return new Venue(id, name, capacity, address);
     }
 
     public static Ticket readTicket(String ticketName) {
-        return readTicket();
-        int id = client.util.CreateID.createTicketID();
+        int id = 0;
         Coordinates coordinates = readCoordinates();
         LocalDateTime createDate = LocalDateTime.now();
         Long price = readPrice("Введите стоимость");
@@ -207,8 +205,7 @@ public class ConsoleReader {
     }
 
     public static Ticket readTicket() {
-        System.out.println("Введите данные билета");
-        int id = client.util.CreateID.createTicketID();
+        int id = 0;
         String name = readNotEmptyStr("Введите название: ");
         Coordinates coordinates = readCoordinates();
         LocalDateTime createDate = LocalDateTime.now();

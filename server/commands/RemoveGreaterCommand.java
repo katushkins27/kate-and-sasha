@@ -3,14 +3,6 @@ import common.commands.Command;
 import common.data.Ticket;
 import common.network.Response;
 import server.TicketCollection;
-import common.data.Coordinates;
-import common.data.Ticket;
-import common.data.TicketType;
-import common.data.Venue;
-import to_use.CreateID;
-import to_use.InputReader;
-
-import java.time.LocalDateTime;
 
 public class RemoveGreaterCommand implements Command {
 
@@ -20,7 +12,8 @@ public class RemoveGreaterCommand implements Command {
             return new Response(false,"Не передан элемент для сравнения");
         }
         Ticket compareTicket = (Ticket) extraData;
-        return new Response(true, "Элементы удалены");
+        int removed = collection.removeAllGreater(compareTicket);
+        return new Response(true, "Элементы удалены " + removed);
     }
 
 

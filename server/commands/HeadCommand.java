@@ -3,12 +3,12 @@ package server.commands;
 import common.commands.Command;
 import common.data.Ticket;
 import common.network.Response;
-import collection.TicketCollection;
+import server.TicketCollection;
 
 public class HeadCommand implements Command {
 
     @Override
-    public Response execute(TicketCollection collection, String arg Object extraData) {
+    public Response execute(TicketCollection collection, String arg, Object extraData) {
         Ticket ticket = collection.head();
         if (ticket == null) {
             return new Response(true, "Коллекция пустая");

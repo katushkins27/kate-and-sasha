@@ -2,11 +2,11 @@ package server.commands;
 
 import common.commands.Command;
 import common.network.Response;
-import collection.TicketCollection;
+import server.TicketCollection;
 
 public class InfoCommand implements Command {
     @Override
-    ppublic Response execute(TicketCollection collection, String arg, Object extraData) {
+    public Response execute(TicketCollection collection, String arg, Object extraData) {
         return new Response(true, collection.getInfo());
     }
 

@@ -1,11 +1,12 @@
 package client;
-import com.sun.net.httpserver.Request;
+import common.data.Ticket;
 import common.network.*;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Scanner;
+
 public class Client {
     private static final int max_retries=3;
     private static final int timeout = 5000;
@@ -69,51 +70,66 @@ public class Client {
     private Request buildRequest(String command, String arg){
         switch (command){
             case "add":
-                System.out.println("Введите данные билета: ");
-                return new Request(command, arg, ConsoleReader.readTicket());
+                Ticket ticket = ConsoleReader.readTicket();
+                if (ticket == null) {
+                    System.out.println("Не удалось создать билет. Команда отменена.");
+                    return null;
+                }
+                return new Request(command, ticket);
             case "update":
                 if (arg.isEmpty()){
                     System.out.println("Ошибка. Укажите ID для обновления");
                     return null;
                 }
                 System.out.println("Введите новые данные билета");
-                return new Request(command, arg, ConsoleReader.readTicket());
+                Ticket updatedTicket = ConsoleReader.readTicket();
+                if (updatedTicket == null) {
+                    System.out.println("Не удалось создать билет. Команда отменена.");
+                    return null;
+                }
+                return new Request(command, arg, updatedTicket);
+
             case "remove_greater":
                 System.out.println("Введите билет для сравнения");
-                return new Request(command, ConsoleReader.readTicket());
-            case "remove_any_by_type":
-                if (arg.isEmpty()){
-                    System.out.println("Введите тип билета: VIP, USUAL, BUDGETARY, CHEAP");
-                    String typeInput = scanner.nextLine().trim().toUpperCase();
-                    try {
-                        return new Request(command, common.data.TicketType.valueOf(typeInput));
-                    } catch (IllegalArgumentException e){
-                        System.out.println("Ошибка! Неверный тип билета");
-                        return null;
-                    }
+                Ticket compareTicket = ConsoleReader.readTicket();
+                if (compareTicket == null) {
+                    System.out.println("Не удалось создать билет для сравнения. Команда отменена.");
+                    return null;
                 }
+                return new Request(command, compareTicket);
+
+            case "remove_any_by_type":
+                String typeInput;
+                if (arg.isEmpty()) {
+                    System.out.println("Введите тип билета: VIP, USUAL, BUDGETARY, CHEAP");
+                    typeInput = scanner.nextLine().trim().toUpperCase();
+                } else {
+                    typeInput = arg.toUpperCase();
+                }
+
                 try {
-                    return new Request(command, common.data.TicketType.valueOf(arg.toUpperCase()));
+                    common.data.TicketType type = common.data.TicketType.valueOf(typeInput);
+                    return new Request(command, type);
+
                 } catch (IllegalArgumentException e){
                     System.out.println("Ошибка! Неверный тип билета");
                     return null;
                 }
             case "remove_all_by_price":
+                String priceInput;
                 if (arg.isEmpty()){
                     System.out.println("Введите цену билета:");
-                    String priceInput = scanner.nextLine().trim();
-                    if (priceInput.isEmpty()){
-                        return new Request(command, (Long) null);
-                    }
-                    try {
-                        return new Request(command, Long.parseLong(priceInput));
-                    } catch (NumberFormatException e){
-                        System.out.println("Ошибка! Цена должна быть числом!");
-                        return null;
-                    }
+                    priceInput = scanner.nextLine().trim();
+                } else {
+                    priceInput = arg;
+                }
+
+                if (priceInput.isEmpty()) {
+                    return new Request(command, (Long) null);
                 }
                 try {
-                    return new Request(command, arg.isEmpty() ? null : Long.parseLong(arg));
+                    Long price = Long.valueOf(priceInput);
+                    return new Request(command, price);
                 } catch (NumberFormatException e){
                     System.out.println("Ошибка! Цена должна быть числом!");
                     return null;

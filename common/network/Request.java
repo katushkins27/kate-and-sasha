@@ -11,7 +11,7 @@ public class Request implements Serializable {
     private final TicketType type;
     private final Long price;
 
-    public Request(String commandName{
+    public Request(String commandName){
         this(commandName, null, null, null, null);
     }
     public Request(String commandName, String arg){
@@ -25,6 +25,12 @@ public class Request implements Serializable {
     }
     public Request(String commandName, TicketType type){
         this(commandName, null, null, null, type);
+    }
+    public Request(String commandName, String arg, Ticket ticket) {
+        this(commandName, arg, ticket, null, null);
+    }
+    public Request(String commandName, Ticket ticket, boolean isCompareTicket) {
+        this(commandName, null, ticket, null, null);
     }
 
     private Request(String commandName, String arg, Ticket ticket, Long price, TicketType type){

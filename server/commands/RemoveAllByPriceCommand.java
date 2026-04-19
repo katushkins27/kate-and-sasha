@@ -5,6 +5,7 @@ import server.TicketCollection;
 import common.data.Ticket;
 
 public class RemoveAllByPriceCommand implements Command {
+    private TicketCollection collection;
 
     private Ticket findTicketByPrice(Long price) {
         for (Ticket ticket : collection.getCollection()) {

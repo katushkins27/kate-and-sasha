@@ -2,13 +2,21 @@ package server.commands;
 
 import common.commands.Command;
 import common.network.Response;
-import collection.TicketCollection;
+import server.TicketCollection;
+import server.util.Parser;
 
 public class SaveCommand implements Command {
+    private final String filename;
+    private final TicketCollection collection;
+
+    public SaveCommand(String filename, TicketCollection collection) {
+        this.filename = filename;
+        this.collection = collection;
+    }
     @Override
     public Response execute(TicketCollection collection, String arg, Object extraData) {
         try {
-            collection.saveFileToCSV();
+            Parser.saveFileToCSV(collection.getCollection(), filename);
             return new Response(true, "Коллекция сохранена в файл");
         } catch (Exception e) {
             return new Response(false, "Ошибка при сохранении файла " + e.getMessage());

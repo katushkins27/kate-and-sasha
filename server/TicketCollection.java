@@ -1,6 +1,5 @@
 package server;
 import common.data.*;
-import to_use.*;
 import server.util.Parser;
 import server.util.CreateID;
 import java.util.*;
@@ -91,8 +90,6 @@ public class TicketCollection {
     }
 
     public ArrayDeque<Ticket> getCollection() {return collection;}
-
-    public int size() {return collection.size();}
 
     public void removeHead(){
         Ticket ticket = head();

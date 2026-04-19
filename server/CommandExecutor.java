@@ -5,41 +5,43 @@ import common.network.Request;
 import server.commands.*;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class CommandExecutor {
     private final TicketCollection collection;
+    private final String filename;
     private final Map<String, Command> commands = new HashMap<>();
 
-    public CommandExecutor(TicketCollection collection){
-        this.collection=collection;
+    public CommandExecutor(TicketCollection collection, String filename){
+        this.collection = collection;
+        this.filename = filename;
         addAllCommands();
     }
     private void addAllCommands(){
-        commands.put('help',new HelpCommand(this));
-        commands.put('info',new InfoCommand());
-        commands.put('show',new ShowCommand());
-        commands.put('add',new AddCommand());
-        commands.put('update',new UpdateCommand());
-        commands.put('remove_by_id',new RemoveByIDCommand());
-        commands.put('clear',new ClearCommand());
-        commands.put('head',new HeadCommand());
-        commands.put('remove_head',new RemoveHeadCommand());
-        commands.put('remove_greater',new RemoveGreaterCommand());
-        commands.put('remove_all_by_price',new RemoveAllByPriceCommand());
-        commands.put('remove_any_by_type',new RemoveAnyByTypeCommand());
-        commands.put('min_by_venue',new MinByVenueCommand());
-        commands.put('save',new SaveCommand());
+        commands.put("help",new HelpCommand(this));
+        commands.put("info",new InfoCommand());
+        commands.put("show",new ShowCommand());
+        commands.put("add",new AddCommand());
+        commands.put("update",new UpdateCommand());
+        commands.put("remove_by_id",new RemoveByIDCommand());
+        commands.put("clear",new ClearCommand());
+        commands.put("head",new HeadCommand());
+        commands.put("remove_head",new RemoveHeadCommand());
+        commands.put("remove_greater",new RemoveGreaterCommand());
+        commands.put("remove_all_by_price",new RemoveAllByPriceCommand());
+        commands.put("remove_any_by_type",new RemoveAnyByTypeCommand());
+        commands.put("min_by_venue",new MinByVenueCommand());
+        //commands.put("save",new SaveCommand(filename, collection));
     }
 
     public Map<String, Command> getCommands(){
         return commands;
     }
+
     public Response execute(Request request){
         String commandName = request.getCommandName();
         Command command = commands.get(commandName);
         if (command==null){
-            return new Response(false, "Неизвестная команда: "+ commandName)
+            return new Response(false, "Неизвестная команда: "+ commandName);
         }
         try {
             Object extraData = null;

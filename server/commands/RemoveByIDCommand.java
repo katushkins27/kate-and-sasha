@@ -2,8 +2,6 @@ package server.commands;
 import common.commands.Command;
 import common.network.Response;
 import server.TicketCollection;
-import common.data.Ticket;
-import to_use.CreateID;
 
 public class RemoveByIDCommand implements Command {
 

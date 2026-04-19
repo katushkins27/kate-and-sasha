@@ -1,19 +1,30 @@
 package server.commands;
 
-import collection.TicketCollection;
+import server.TicketCollection;
 import common.commands.Command;
 import common.data.Ticket;
 import common.network.Response;
+import server.util.CreateID;
 
 public class AddCommand implements Command {
     @Override
-    public Response execute(TicketCollection collection, String arg Object extraData) {
+    public Response execute(TicketCollection collection, String arg, Object extraData) {
         if (!(extraData instanceof Ticket)) {
-        return new Response(false, "Данные билета не переданы");
+            return new Response(false, "Данные билета не переданы");
         }
         Ticket ticket = (Ticket) extraData;
-        collection.add(Ticket);
-        return new Response(true, "Данные билета переданы с ID: " + ticket.getID());
+        System.out.println(ticket);
+
+        if (ticket.getId() == 0) {
+            int newID = CreateID.createTicketID();
+            ticket.setID(newID);
+        }
+        if (ticket.getVenue() != null && ticket.getVenue().getID() == 0) {
+            ticket.getVenue().setID(CreateID.createVenueID());
+        }
+        System.out.println(ticket);
+        collection.addElement(ticket);
+        return new Response(true, "Данные билета переданы с ID: " + ticket.getId());
     }
 
     @Override

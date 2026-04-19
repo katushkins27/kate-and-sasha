@@ -1,8 +1,7 @@
 package server.util;
 
 import common.data.*;
-import to_use.CreateID;
-
+import server.util.CreateID;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -86,7 +85,7 @@ public class Parser {
     private static Ticket parseOneLine(String line) {
         String[] fields = line.split(";", -1); //список с полями строки
         Ticket ticket = new Ticket();
-        ticket.setID(Integer.parseInt(fields[0].trim()));
+        ticket.setIdWithValid(Integer.parseInt(fields[0].trim()));
         CreateID.addTicketID(ticket.getId());
         ticket.setName(fields[1].trim());
         Coordinates coordinates = new Coordinates();
@@ -102,7 +101,7 @@ public class Parser {
         ticket.setType(TicketType.valueOf(fields[6].trim()));
         if (fields.length > 7 && !fields[7].trim().isEmpty()){
             Venue venue = new Venue();
-            venue.setID(Long.parseLong(fields[7].trim()));
+            venue.setIdWithValid(Long.parseLong(fields[7].trim()));
             venue.setName(fields[8].trim());
             venue.setCapacity(Integer.parseInt(fields[9].trim()));
             Address address = new Address();

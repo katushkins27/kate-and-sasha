@@ -43,8 +43,12 @@ public class Venue implements Comparable<Venue>, Serializable{
     }
 
     public void setID(long id){
+        this.id = id;
+    }
+
+    public void setIdWithValid(long id) {
         if (id <= 0) {
-            throw new IllegalArgumentException("id должно быть строго больше 0");
+            throw new IllegalArgumentException("ID должен быть строго больше 0");
         }
         this.id = id;
     }
