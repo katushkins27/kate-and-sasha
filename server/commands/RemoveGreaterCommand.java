@@ -13,7 +13,7 @@ public class RemoveGreaterCommand implements Command {
         }
         Ticket compareTicket = (Ticket) extraData;
         int removed = collection.removeAllGreater(compareTicket);
-        return new Response(true, "Элементы удалены " + removed);
+        return new Response(true, "Элементы удалены. Количество удаленных элементов: " + removed);
     }
 
 
