@@ -12,7 +12,7 @@ public class RemoveByIDCommand implements Command {
             if (collection.removeById(id)){
                 return new Response(true, "Билет с ID "+id+" удален");
             } else {
-                return new Response(false, "Билет с ID "+id+"не найден");
+                return new Response(false, "Билет с ID "+id+" не найден");
             }
         } catch (NumberFormatException e) {
             return new Response(false, "Ошибка в ID. Введите число");
