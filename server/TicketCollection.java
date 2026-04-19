@@ -28,7 +28,23 @@ public class TicketCollection {
         collection = collection.stream().sorted().collect(Collectors.toCollection(ArrayDeque::new));
     }
 
+    private void sortCollectionByLocation() {
+        collection = collection.stream()
+                .sorted((t1, t2) -> getTownName(t1).compareTo(getTownName(t2)))
+                .collect(Collectors.toCollection(ArrayDeque::new));
+    }
+    private String getTownName(Ticket ticket){
+        if (ticket.getVenue() != null &&
+                ticket.getVenue().getAddress() != null &&
+                ticket.getVenue().getAddress().getTown() != null &&
+                ticket.getVenue().getAddress().getTown().getName() != null) {
+            return ticket.getVenue().getAddress().getTown().getName();
+        }
+        return "";
+    }
+
     public Ticket head() {
+        sortCollectionByLocation();
         return collection.peekFirst();
     }
 
@@ -73,18 +89,8 @@ public class TicketCollection {
     public String showAll(){
         if (collection.isEmpty()) return "Коллекция пустая";
         return  collection.stream().sorted((t1,t2)->{
-            String loc1="";
-            if (t1.getVenue()!=null && t1.getVenue().getAddress() !=null &&
-            t1.getVenue().getAddress().getTown() != null &&
-            t1.getVenue().getAddress().getTown().getName() != null){
-                loc1= t1.getVenue().getAddress().getTown().getName();
-            }
-            String loc2="";
-            if (t2.getVenue()!=null && t2.getVenue().getAddress() !=null &&
-                    t2.getVenue().getAddress().getTown() != null &&
-                    t2.getVenue().getAddress().getTown().getName() != null){
-                loc2= t2.getVenue().getAddress().getTown().getName();
-            }
+            String loc1=getTownName(t1);
+            String loc2=getTownName(t2);
             return loc1.compareTo(loc2);
         }).map(Ticket::toString).collect(Collectors.joining("\n"));
     }
@@ -92,6 +98,7 @@ public class TicketCollection {
     public ArrayDeque<Ticket> getCollection() {return collection;}
 
     public void removeHead(){
+        sortCollectionByLocation();
         Ticket ticket = head();
         if (ticket != null){
             CreateID.removeTicketID(ticket.getId());
