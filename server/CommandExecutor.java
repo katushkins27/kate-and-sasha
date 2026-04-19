@@ -1,5 +1,4 @@
 package server;
-import com.sun.net.httpserver.Request;
 import common.commands.Command;
 import common.network.Response;
 import common.network.Request;
