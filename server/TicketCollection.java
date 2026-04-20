@@ -131,7 +131,7 @@ public class TicketCollection {
         int count = 0;
         while (iterator.hasNext()){
             Ticket ticket = iterator.next();
-            if (price.equals(ticket.getPrice())){
+            if (Objects.equals(price, ticket.getPrice())){
                 count = count +1;
                 iterator.remove();
                 CreateID.removeTicketID(ticket.getId());
