@@ -7,6 +7,11 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Scanner;
+import org.jline.reader.Completer;
+import org.jline.reader.Candidate;
+
+import org.jline.reader.*;
+import org.jline.terminal.*;
 
 public class Client {
     private static final int max_retries=3;
@@ -16,12 +21,35 @@ public class Client {
     private final int port;
     private DatagramChannel channel;
     private SocketAddress serverAddress;
-    private Scanner scanner;
+    private LineReader reader;
 
     public Client (String host, int port){
         this.host = host;
         this.port= port;
-        this.scanner = new Scanner(System.in);
+        initConsole();
+    }
+    private void initConsole(){
+        try {
+            Terminal terminal = TerminalBuilder.builder().system(true).build();
+            Completer completer = (reader, line, candidates) -> {
+                String buffer = line.line();
+                String[] parts = buffer.split("\\s+");
+                String prefix = parts[0].toLowerCase();
+                String[] commands = {"add", "show", "update", "remove_by_id", "remove_head",
+                        "head", "clear", "remove_greater", "remove_all_by_price",
+                        "remove_any_by_type", "min_by_venue", "help", "info", "exit"};
+
+                for (String cmd : commands) {
+                    if (cmd.startsWith(prefix)) {
+                        candidates.add(new Candidate(cmd));
+                    }
+                }
+            };
+            reader = LineReaderBuilder.builder().terminal(terminal).completer(completer).build();
+        } catch (IOException e) {
+           System.out.println("Ошибка инициализации jline");
+           reader = null;
+        }
     }
     public void start(){
         try{
@@ -32,8 +60,23 @@ public class Client {
             System.out.println("Введите 'help' для списка команд, 'exit' для выхода");
             boolean running = true;
             while (running){
-                System.out.print("> ");
-                String inputLine = scanner.nextLine().trim();
+                String inputLine;
+                if (reader != null){
+                    try {
+                        inputLine = reader.readLine("> ");
+                        if (inputLine.isEmpty()) continue;
+                        inputLine = inputLine.trim();
+                    } catch (UserInterruptException e){
+                        System.out.println("\nВыход");
+                        break;
+                    } catch (EndOfFileException e){
+                        System.out.println("\nВыход");
+                        break;
+                    }
+                } else {
+                    System.out.print("> ");
+                    inputLine = new java.util.Scanner(System.in).nextLine().trim();
+                }
                 if (inputLine.isEmpty()) continue;
                 if (inputLine.equalsIgnoreCase("exit")){
                     running = false;
@@ -103,7 +146,7 @@ public class Client {
                 String typeInput;
                 if (arg.isEmpty()) {
                     System.out.println(TicketType.AllDescriptions());
-                    typeInput = scanner.nextLine().trim().toUpperCase();
+                    typeInput = reader.readLine().trim().toUpperCase();
                 } else {
                     typeInput = arg.toUpperCase();
                 }
@@ -120,7 +163,7 @@ public class Client {
                 String priceInput;
                 if (arg.isEmpty()){
                     System.out.println("Введите цену билета:");
-                    priceInput = scanner.nextLine().trim();
+                    priceInput = reader.readLine().trim();
                 } else {
                     priceInput = arg;
                 }
