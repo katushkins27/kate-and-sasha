@@ -22,6 +22,7 @@ public class Client {
     private DatagramChannel channel;
     private SocketAddress serverAddress;
     private LineReader reader;
+    private boolean running = true;
 
     public Client (String host, int port){
         this.host = host;
@@ -37,7 +38,7 @@ public class Client {
                 String prefix = parts[0].toLowerCase();
                 String[] commands = {"add", "show", "update", "remove_by_id", "remove_head",
                         "head", "clear", "remove_greater", "remove_all_by_price",
-                        "remove_any_by_type", "min_by_venue", "help", "info", "exit"};
+                        "remove_any_by_type", "min_by_venue", "help", "info", "exit", "execute_script"};
 
                 for (String cmd : commands) {
                     if (cmd.startsWith(prefix)) {
@@ -78,11 +79,6 @@ public class Client {
                     inputLine = new java.util.Scanner(System.in).nextLine().trim();
                 }
                 if (inputLine.isEmpty()) continue;
-                if (inputLine.equalsIgnoreCase("exit")){
-                    running = false;
-                    System.out.println("Сеанс завершен");
-                    break;
-                }
                 processCommand(inputLine);
             }
         } catch (IOException e){
@@ -114,7 +110,12 @@ public class Client {
     private Request buildRequest(String command, String arg){
         switch (command){
             case "add":
-                Ticket ticket = ConsoleReader.readTicket();
+                Ticket ticket;
+                if (arg.isEmpty()) {
+                    ticket = ConsoleReader.readTicket();
+                } else {
+                    ticket = ConsoleReader.readTicket(arg);
+                }
                 if (ticket == null) {
                     System.out.println("Не удалось создать билет. Команда отменена.");
                     return null;
@@ -173,6 +174,7 @@ public class Client {
                 }
                 try {
                     Long price = Long.valueOf(priceInput);
+                    //System.out.println(price);
                     return new Request(command, price);
                 } catch (NumberFormatException e){
                     System.out.println("Ошибка! Цена должна быть числом!");
@@ -187,10 +189,56 @@ public class Client {
             case "help":
             case "min_by_venue":
                 return new Request(command, arg);
+            case "exit":
+                if (ConsoleReader.isScriptRegime()) {
+                    System.out.println("Скрипт прерван командой exit");
+                    return null;
+                } else {
+                    running = false;
+                    System.out.println("Сеанс завершен");
+                    return null;
+                }
+            case "execute_script":
+                if (arg.isEmpty()) {
+                    //System.out.println("Использование: execute_script file_name");
+                    return null;
+                }
+                executeScript(arg);
+                return null;
+
 
             default:
                 System.out.println("Неизвестная команда. Введите 'help' для списка доступных команд.");
                 return null;
+        }
+    }
+
+    private void executeScript(String filename) {
+        try {
+            Scanner fileScanner = new Scanner(new File(filename));
+            ConsoleReader.setScriptRegime(fileScanner);
+
+            String commandLine;
+            while ((commandLine = ConsoleReader.readNextCommand()) != null) {
+                String[] parts = commandLine.split("\\s+", 2);
+                String cmd = parts[0];
+                String arg = parts.length > 1 ? parts[1] : "";
+                System.out.println("\nВыполняется: " + cmd + " " + arg);
+
+                Request request = buildRequest(cmd, arg);
+                if (request != null) {
+                    try {
+                        Response response = sendWithRetry(request);
+                        printResponse(response);
+                    } catch (IOException e) {
+                        System.err.println("Ошибка отправки запроса: " + e.getMessage());
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.err.println("Файл не найден: " + filename);
+        } finally {
+            ConsoleReader.setInteractiveRegime();
         }
     }
     private Response sendWithRetry(Request request) throws IOException{
