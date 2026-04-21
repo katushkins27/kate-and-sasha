@@ -13,7 +13,6 @@ public class AddCommand implements Command {
             return new Response(false, "Данные билета не переданы");
         }
         Ticket ticket = (Ticket) extraData;
-        System.out.println(ticket);
 
         if (ticket.getId() == 0) {
             int newID = CreateID.createTicketID();
@@ -22,7 +21,6 @@ public class AddCommand implements Command {
         if (ticket.getVenue() != null && ticket.getVenue().getID() == 0) {
             ticket.getVenue().setID(CreateID.createVenueID());
         }
-        System.out.println(ticket);
         collection.addElement(ticket);
         return new Response(true, "Данные билета переданы с ID: " + ticket.getId());
     }

@@ -15,6 +15,7 @@ public class HelpCommand implements Command {
         StringBuilder stringBuilder = new StringBuilder("Всевозможные команды:\n");
         for (Command cmd : executor.getCommands().values()) {
             stringBuilder.append("  ").append(cmd.getName()).append(" - ").append(cmd.getDescription()).append("\n");}
+        stringBuilder.append("  exeсute_script - Исполнение скрипта от пользователя\n");
         stringBuilder.append("  exit - Завершение пользования клиентским модулем\n");
         return new Response(true, stringBuilder.toString());
     }
