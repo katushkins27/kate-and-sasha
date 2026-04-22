@@ -54,30 +54,29 @@ public class TicketCollection {
     }
 
     public boolean update(int id, Ticket newTicket){
-        Iterator<Ticket> iterator = collection.iterator();
-        while (iterator.hasNext()){
-            Ticket ticket = iterator.next();
-            if (id == ticket.getId()){
-                iterator.remove();
-                CreateID.removeTicketID(id);
-                if (ticket.getVenue()!=null){
-                    CreateID.removeVenueID(ticket.getVenue().getID());
-                }
-                collection.add(newTicket);
-                sortCollection();
-                return true;
+        Optional<Ticket> optionalTicket=collection.stream().filter(t-> t.getId()==id).
+                findFirst();
+        if (optionalTicket.isPresent()) {
+            Ticket oldTicket = optionalTicket.get();
+            collection.remove(oldTicket);
+            CreateID.removeTicketID(id);
+            if (oldTicket.getVenue() != null) {
+                CreateID.removeVenueID(oldTicket.getVenue().getID());
             }
+
+            collection.add(newTicket);
+            sortCollection();
+            return true;
         }
         return false;
     }
 
     public void clearCollection() {
-        for (Ticket ticket : collection) {
+        collection.stream().forEach(ticket -> {
             CreateID.removeTicketID(ticket.getId());
-            if (ticket.getVenue() != null) {
-                CreateID.removeVenueID(ticket.getVenue().getID());
-            }
-        }
+            Optional.ofNullable(ticket.getVenue())
+                    .ifPresent(venue -> CreateID.removeVenueID(venue.getID()));
+        });
         collection.clear();
     }
 
@@ -99,86 +98,70 @@ public class TicketCollection {
 
     public void removeHead(){
         sortCollectionByLocation();
-        Ticket ticket = head();
-        if (ticket != null){
+        collection.stream().findFirst().ifPresent(ticket -> {
             CreateID.removeTicketID(ticket.getId());
-            if (ticket.getVenue()!=null){
-                CreateID.removeVenueID(ticket.getVenue().getID());
-            }
+            Optional.ofNullable(ticket.getVenue())
+                    .ifPresent(venue -> CreateID.removeVenueID(venue.getID()));
             collection.pollFirst();
-        }
+        });
     }
 
     public boolean removeById(int id){
-        Iterator<Ticket> iterator = collection.iterator();
-        while (iterator.hasNext()){
-            Ticket ticket = iterator.next();
-            if (id == ticket.getId()){
-                iterator.remove();
-                CreateID.removeTicketID(id);
-                if (ticket.getVenue()!=null){
-                    CreateID.removeVenueID(ticket.getVenue().getID());
-                }
-                sortCollection();
-                return true;
-            }
+        Optional<Ticket> ticketRemoved = collection.stream().filter(t->t.getId()==id).findFirst();
+        ticketRemoved.ifPresent(ticket -> {
+            CreateID.removeTicketID(id);
+            Optional.ofNullable(ticket.getVenue())
+                    .ifPresent(venue -> CreateID.removeVenueID(venue.getID()));
+        });
+        boolean removed = ticketRemoved.isPresent();
+        if (removed){
+            collection = collection.stream().filter(t->t.getId()!=id)
+                    .collect(Collectors.toCollection(ArrayDeque::new));
+            sortCollection();
         }
-        return false;
+        return removed;
     }
 
     public int removeAllByPrice(Long price){
-        Iterator<Ticket> iterator = collection.iterator();
-        int count = 0;
-        while (iterator.hasNext()){
-            Ticket ticket = iterator.next();
-            if (Objects.equals(price, ticket.getPrice())){
-                count = count +1;
-                iterator.remove();
-                CreateID.removeTicketID(ticket.getId());
-                if (ticket.getVenue()!=null){
-                    CreateID.removeVenueID(ticket.getVenue().getID());
-                }
-            }
-        }
+        long count = collection.stream().filter(t -> Objects.equals(price, t.getPrice()))
+                .count();
+        if (count==0) return 0;
+        collection.stream().filter(t-> Objects.equals(price, t.getPrice()))
+                .forEach(ticket-> {
+                    CreateID.removeTicketID(ticket.getId());
+                    Optional.ofNullable(ticket.getVenue())
+                            .ifPresent(venue -> CreateID.removeVenueID(venue.getID()));
+                });
+        collection.removeIf(ticket-> Objects.equals(price, ticket.getPrice()));
         sortCollection();
-        return count;
+        return (int) count;
     }
 
     public boolean removeByType(TicketType type){
-        Iterator<Ticket> iterator = collection.iterator();
-        while (iterator.hasNext()){
-            Ticket ticket = iterator.next();
-            if (type == ticket.getType()){
-                iterator.remove();
-                CreateID.removeTicketID(ticket.getId());
-                if (ticket.getVenue()!=null){
-                    CreateID.removeVenueID(ticket.getVenue().getID());
-                }
-                sortCollection();
-                return true;
-            }
-        }
-        return false;
+        Optional<Ticket> ticketRemoved = collection.stream().filter(t->t.getType()==type).findFirst();
+        ticketRemoved.ifPresent(ticket -> {
+            collection.remove(ticket);
+            CreateID.removeTicketID(ticket.getId());
+            Optional.ofNullable(ticket.getVenue())
+                    .ifPresent(venue -> CreateID.removeVenueID(venue.getID()));
+            sortCollection();
+        });
+        return ticketRemoved.isPresent();
+
     }
 
     public int removeAllGreater(Ticket newTicket){
-        Iterator<Ticket> iterator = collection.iterator();
-        int count = 0;
-        while (iterator.hasNext()){
-            Ticket ticket = iterator.next();
-            if (ticket.compareTo(newTicket)<0){
-                count = count +1;
-                iterator.remove();
-                CreateID.removeTicketID(ticket.getId());
-                if (ticket.getVenue()!=null){
-                    CreateID.removeVenueID(ticket.getVenue().getID());
-                }
-            } else{
-                break;
-            }
-        }
+        long count = collection.stream().filter(t-> t.compareTo(newTicket)<0).count();
+        if (count==0) return 0;
+        collection.stream().filter(t-> t.compareTo(newTicket)<0)
+                .forEach(ticket-> {
+                    CreateID.removeTicketID(ticket.getId());
+                    Optional.ofNullable(ticket.getVenue())
+                            .ifPresent(venue -> CreateID.removeVenueID(venue.getID()));
+                });
+        collection.removeIf(ticket-> ticket.compareTo(newTicket)<0);
         sortCollection();
-        return count;
+        return (int) count;
     }
 
     public Ticket getMinByVenue() {
