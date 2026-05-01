@@ -5,7 +5,10 @@ import common.network.*;
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channel;
 import java.nio.channels.DatagramChannel;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.util.Scanner;
 import org.jline.reader.Completer;
 import org.jline.reader.Candidate;
@@ -227,12 +230,8 @@ public class Client {
 
                 Request request = buildRequest(cmd, arg);
                 if (request != null) {
-                    try {
-                        Response response = sendWithRetry(request);
-                        printResponse(response);
-                    } catch (IOException e) {
-                        System.err.println("Ошибка отправки запроса: " + e.getMessage());
-                    }
+                    Response response = sendWithRetry(request);
+                    printResponse(response);
                 }
             }
         } catch (FileNotFoundException e) {
@@ -241,7 +240,7 @@ public class Client {
             ConsoleReader.setInteractiveRegime();
         }
     }
-    private Response sendWithRetry(Request request) throws IOException{
+    /**private Response sendWithRetry(Request request) throws IOException{
         for (int attempt = 0; attempt<max_retries; attempt++){
             try{
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -251,7 +250,6 @@ public class Client {
                 byte[] data = bos.toByteArray();
                 channel.send(ByteBuffer.wrap(data),serverAddress);
                 ByteBuffer buffer = ByteBuffer.allocate(65507);
-                channel.socket().setSoTimeout(timeout);
                 long startime = System.currentTimeMillis();
                 while (System.currentTimeMillis()-startime<timeout){
                     SocketAddress receivedFrom = channel.receive(buffer);
@@ -266,7 +264,7 @@ public class Client {
                     }
                     Thread.sleep(100);
                 }
-                System.out.println("Время вышло, попытка "+(attempt+1)+" из "+max_retries);
+                System.out.println("Время вышло, попытка "+(attempt+1) + " из " + max_retries);
             } catch (InterruptedException e){
                 Thread.currentThread().interrupt();
                 break;
@@ -275,6 +273,61 @@ public class Client {
             }
         }
         return new Response(false,"Сервер недоступен, попробуйте позже");
+    }
+     **/
+    private void sendRequest(Request request) throws IOException{
+        try(ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+            oos.writeObject(request);
+            oos.flush();
+            byte[] data = bos.toByteArray();
+            channel.send(ByteBuffer.wrap(data), serverAddress);
+        }
+    }
+    public Response sendWithRetry(Request request){
+        for (int attempt = 0; attempt<max_retries; attempt++){
+            try{
+                sendRequest(request);
+                Response responce = receiveWithTimeOut(timeout);
+                if (responce != null){
+                    return responce;
+                }
+                System.out.println("Время вышло, попытка "+(attempt+1) + " из " + max_retries);
+            } catch (Exception e){
+                System.out.println("Ошибка при обмене данными" + e.getMessage());
+            }
+        }
+        System.out.println("Превышено время ожидания ответа от сервера");
+        return null;
+    }
+
+    private Response receiveWithTimeOut(long time) throws IOException{
+        long starTime = System.currentTimeMillis();
+        long timeLeft = timeout;
+        ByteBuffer buffer = ByteBuffer.allocate(65536);
+        try (Selector selector = Selector.open()) {
+            channel.register(selector, SelectionKey.OP_READ);
+            while (timeLeft > 0){
+                int rdyChannels = selector.select(timeLeft);
+                if (rdyChannels >0){
+                    selector.selectedKeys().clear();
+                    SocketAddress receivedFrom = channel.receive(buffer);
+                    if (receivedFrom != null && receivedFrom.equals(serverAddress)){
+                        buffer.flip();
+                        byte[] responseData = new byte[buffer.remaining()];
+                        buffer.get(responseData);
+                        try (ByteArrayInputStream bais = new ByteArrayInputStream(responseData);
+                        ObjectInputStream ois = new ObjectInputStream(bais)){
+                            return (Response) ois.readObject();
+                        } catch (ClassNotFoundException e){
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                timeLeft = timeout - (System.currentTimeMillis() - starTime);
+            }
+        }
+        return null;
     }
     private void printResponse(Response response){
         if (response==null){
@@ -288,7 +341,6 @@ public class Client {
         }
     }
 
-    //здесь мэйн надо это глянуть!!!
     public static void main(String[] args) {
         String host = "localhost";
         int port = 8080;
