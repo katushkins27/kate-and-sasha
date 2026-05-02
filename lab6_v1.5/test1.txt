@@ -1,0 +1,39 @@
+help
+info
+show
+head
+min_by_venue
+remove_by_id 77
+show
+
+remove_any_by_type vip
+show
+add концерт лсп
+10
+33
+
+VIP
+Base
+2000
+Кондратьевский пр-кт, 44
+13457
+44.7777
+56
+34.6
+Санкт-Петербург
+show
+update 4
+концерт лсппппп
+10
+33
+
+VIP
+Base
+2000
+Кондратьевский пр-кт, 44
+13457
+44.7777
+56
+34.6
+Санкт-Петербург
+show
