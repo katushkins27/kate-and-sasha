@@ -1,5 +1,0 @@
-client\Client.class
-client\NetworkManager.class
-client\RequestBuilder.class
-client\ConsoleReader.class
-client\ScriptExecutor.class
